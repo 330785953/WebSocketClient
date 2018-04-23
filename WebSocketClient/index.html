@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <script src="bufferReader.js"></script>
+    <script src="bufferWriter.js"></script>
+    <script src="commandParser.js"></script>
+    <script src="webSocketService.js"></script>
+    <script src="connectOption.js"></script>
+    <script>
+        var client = new WebSocketService({
+            address: "ws://39.106.137.114:8080",
+            userName: "0001",
+            password: "123",
+            onopen: function () {
+                document.getElementById("state").innerHTML = "连接正常";
+            },
+            onclose: function () {
+                document.getElementById("state").innerHTML = "连接关闭";
+            },
+            onlogin: function () {
+                client.subscribe('13100000001');
+            },
+            onSendReply: function (tid, obj) {
+                document.getElementById("tsendrv").innerHTML = JSON.stringify(obj);
+            },
+            onCommonReply: function (obj) {
+                document.getElementById("sreply").innerHTML = JSON.stringify(obj);
+            },
+            onTerminalReply:function(tid, obj){
+                document.getElementById("trv").innerHTML = JSON.stringify(obj);
+            },
+            onRecvTerminalData: function (tid, obj) {
+                document.getElementById("tid").innerHTML = tid;
+                document.getElementById("tvalue").innerHTML = JSON.stringify(obj);
+            }
+        });
+        
+        var test = function () {
+            client.sendCustomCommand('13100000001', 0xD000, [
+            { dataType: 4, value: "F123445678.txt" },
+            { dataType: 1, value: 0 },
+            {dataType:7, value:"2018-04-14 19:24:23"}]);
+        }
+        var test2 = function () {
+            client.sendCustomCommand('13100000001', 0xD030, [
+                { dataType: 7, value: "2018-04-14 19:24:23" },
+                { dataType: 4, value: "eg:/config.txt" }
+            ]);
+        }
+        var test3 = function () {
+            client.sendCustomCommand('13100000001', 0xD040, [
+                {dataType:7, value:"2018-04-14 19:00:01"}
+            ]);
+        }
+        var test4 = function () {
+            client.sendCustomCommand('13100000001', 0x8B06, [
+                {dataType:7, value:new Date()}
+            ])
+        }
+    </script>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>连接状态</td>
+            <td id="state"></td>
+        </tr>
+        <tr>
+            <td id="tid"></td>
+            <td id="tvalue"></td>
+        </tr>
+        <tr>
+            <td>服务应答</td>
+            <td id="sreply"></td>
+        </tr>
+        <tr>
+            <td id="tsendreply">发送应答</td>
+            <td id="tsendrv"></td>
+        </tr>
+        <tr>
+            <td id="treply">终端应答</td>
+            <td id="trv"></td>
+        </tr>
+    </table>
+    <button onclick="test()">下发升级文件</button>
+    <button onclick="test2()">下发终端文件提取</button>
+    <button onclick="test3()">终端重启</button>
+    <button onclick="test4()">校时</button>
+    <input type="datetime" name="dtvalue" />
+</body>
+</html>
